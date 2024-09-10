@@ -3,6 +3,53 @@
 #include <LiquidCrystal_I2C.h>
 
 #define BUZZER_PIN 8 // Tentukan pin buzzer, sesuaikan jika diperlukan
+#define NOTE_C4 262
+#define NOTE_D4 294
+#define NOTE_E4 330
+#define NOTE_F4 349
+#define NOTE_G4 392
+#define NOTE_A4 440
+#define NOTE_B4 493
+#define NOTE_C5 523
+#define NOTE_D5 587
+#define NOTE_E5 659
+#define NOTE_F5 698
+#define NOTE_G5 784
+#define NOTE_A5 880
+#define NOTE_B5 987
+
+// Melody and duration arrays
+int melody[] = {
+  NOTE_G4, NOTE_C5, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, 
+  NOTE_A4, NOTE_G4, NOTE_F4, NOTE_G4, NOTE_C4, NOTE_C4, 
+  NOTE_D4, NOTE_D4, NOTE_E4, NOTE_F4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_D5, 
+  NOTE_E5, NOTE_D5, NOTE_C5, NOTE_D5, NOTE_B4, NOTE_G4, 
+  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, 
+  NOTE_A4, NOTE_G4, NOTE_F4, NOTE_G4, NOTE_C4, NOTE_C4, 
+  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_B4, NOTE_C5, NOTE_D5, 
+  NOTE_E5, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_C5, NOTE_D5, NOTE_G4, NOTE_G4, NOTE_B4, NOTE_C5, NOTE_D5,
+  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, NOTE_G4, NOTE_A4, NOTE_B4,
+  NOTE_C5, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_C5, NOTE_F5,
+  NOTE_F5, NOTE_E5, NOTE_D5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_C5,
+  NOTE_D5, NOTE_C5, NOTE_B4, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_A4,
+  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_C4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_C5
+};
+
+int noteDurations[] = {
+  8, 4, 6, 16, 4, 8, 8, 
+  4, 6, 16, 4, 8, 8, 
+  4, 8, 8, 4, 8, 8, 4, 8, 8, 2,
+  4, 6, 16, 4, 8, 8, 
+  4, 6, 16, 4, 8, 8, 
+  4, 6, 16, 4, 6, 16, 
+  4, 6, 16, 8, 8, 8, 8, 
+  2, 8, 8, 8, 8, 3, 8, 8, 8, 8, 8,
+  2, 8, 8, 8, 8, 3, 8, 8, 8, 8, 8,
+  4, 6, 16, 4, 6, 16, 4, 8, 8, 2,
+  2, 8, 8, 8, 8, 3, 8, 2,
+  2, 8, 8, 8, 8, 3, 8, 2,
+  4, 6, 16, 4, 4, 2, 4, 4, 1
+};
 
 // Inisialisasi RTC
 RTC_DS3231 rtc;
@@ -27,7 +74,7 @@ const int ishaHour = 19;
 const int ishaMinute = 0;
 
 // Waktu salat Jum'at
-const int jumuahHour = 13;
+const int jumuahHour = 12;
 const int jumuahMinute = 15;
 
 // Variabel untuk melacak waktu update
@@ -36,15 +83,8 @@ unsigned int infoStartMillis = 0;
 const int interval = 120000; // Interval 2 menit (120000 ms)
 const int displayDuration = 30000; // Durasi tampilan info salat (30 detik)
 
-// Gambar dinosaurus dalam ASCII Art
-const char* dinoArt = 
-" * * * * * \n";
-
-// Posisi dinosaurus
-int dinoPos = 0;
-int speed = 1; // Kecepatan gerakan dinosaurus
-
 bool infoDisplayed = false;
+String message = ""; // Pesan untuk ditampilkan
 
 void setup() {
   // Mulai komunikasi serial
@@ -124,7 +164,6 @@ void loop() {
     if (now.second() < 10) lcd.print('0'); // Padding nol untuk detik satu digit
     lcd.print(now.second());
 
-
   }
 
   // Periksa waktu salat dan aktifkan buzzer
@@ -134,70 +173,43 @@ void loop() {
 }
 
 void displayPrayerTime(int hour, int minute, int dayOfWeek) {
-  lcd.clear(); // Hapus tampilan
+  lcd.clear(); // Clear the display
 
-  lcd.setCursor(0, 0); // Pindahkan kursor ke baris pertama
-  lcd.print("Prayer Time:");
-
-  lcd.setCursor(0, 1); // Pindahkan kursor ke baris kedua
-
-  // Menampilkan waktu salat sesuai dengan waktu saat ini
-  if (hour == fajrHour && minute == fajrMinute) {
-    lcd.print("Fajr: ");
-    lcd.print(fajrHour);
-    lcd.print(':');
-    if (fajrMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(fajrMinute);
+  // Tentukan teks yang akan ditampilkan
+  String text;
+  if ((hour == fajrHour && minute == fajrMinute) || (hour >= fajrHour && hour <= 6)) {
+    text = "Waktunya Salat Subuh";
   } else if (dayOfWeek == 5 && hour == jumuahHour && minute == jumuahMinute) {
-    lcd.print("Jumuah: ");
-    lcd.print(jumuahHour);
-    lcd.print(':');
-    if (jumuahMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(jumuahMinute);
-  } else if (hour == dhuhrHour && minute == dhuhrMinute) {
-    lcd.print("Dhuhr: ");
-    lcd.print(dhuhrHour);
-    lcd.print(':');
-    if (dhuhrMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(dhuhrMinute);
-  } else if (hour == asrHour && minute == asrMinute) {
-    lcd.print("Asar: ");
-    lcd.print(asrHour);
-    lcd.print(':');
-    if (asrMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(asrMinute);
-  } else if (hour == maghribHour && minute == maghribMinute) {
-    lcd.print("Maghrib: ");
-    lcd.print(maghribHour);
-    lcd.print(':');
-    if (maghribMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(maghribMinute);
-  } else if (hour == ishaHour && minute == ishaMinute) {
-    lcd.print("Isha: ");
-    lcd.print(ishaHour);
-    lcd.print(':');
-    if (ishaMinute < 10) lcd.print('0'); // Padding nol untuk menit satu digit
-    lcd.print(ishaMinute);
+    text = "Waktunya Salat Jum'at";
+  } else if ((hour == dhuhrHour && minute == dhuhrMinute) || (hour >= dhuhrHour && hour <= asrHour)) {
+    text = "Waktunya Salat Dhuhur";
+  } else if ((hour == asrHour && minute == asrMinute) || (hour >= asrHour && hour <= maghribHour)) {
+    text = "Waktunya Salat Asar";
+  } else if ((hour == maghribHour && minute == maghribMinute) || (hour >= maghribHour && hour <= ishaHour)) {
+    text = "Waktunya Salat Maghrib";
+  } else if ((hour == ishaHour && minute == ishaMinute) || (hour >= ishaHour || hour <= fajrHour)) {
+    text = "Waktunya Salat Isya";
   } else {
-    lcd.clear();
-    // Update posisi dinosaurus
-    updateDino();
+    text = "Tidak Ada Waktu Salat";
   }
+
+  // Tampilkan teks berjalan
+  displayScrollingText(text);
 }
 
-void updateDino() {
-  // Tampilkan gambar dinosaurus di baris pertama
-  lcd.setCursor(dinoPos, 0);
-  lcd.print(dinoArt);
+void displayScrollingText(String text) {
+  int textLength = text.length();
+  for (int pos = 0; pos < textLength + 16; pos++) {
+    lcd.clear();
+    lcd.setCursor(0, 0);
 
-  // Hapus dinosaurus dari posisi lama
-  lcd.setCursor(dinoPos, 0);
-  lcd.print("                "); // Kosongkan area dari posisi dinosaurus lama
-
-  // Update posisi dinosaurus
-  dinoPos += speed;
-  if (dinoPos >= 16) {
-    dinoPos = -strlen(dinoArt); // Mulai dari kiri lagi jika keluar dari layar
+    if (pos < textLength) {
+      lcd.print(text.substring(pos, pos + 16));
+    } else {
+      lcd.print(text.substring(pos - 16, pos));
+    }
+    
+    delay(300); // Delay untuk kecepatan scroll
   }
 }
 
@@ -209,8 +221,18 @@ void checkPrayerTimes(int hour, int minute, int dayOfWeek) {
       (hour == maghribHour && minute == maghribMinute) ||
       (hour == ishaHour && minute == ishaMinute) ||
       (dayOfWeek == 5 && hour == jumuahHour && minute == jumuahMinute)) {
-    tone(BUZZER_PIN, 1000); // Aktifkan suara buzzer
+    int melodyLength = sizeof(melody) / sizeof(melody[0]);
+
+    for (int thisNote = 0; thisNote < melodyLength; thisNote++) {
+      int noteDuration = 2000 / noteDurations[thisNote]; // Duration of the note
+      tone(BUZZER_PIN, melody[thisNote], noteDuration); // Play the note
+      int pauseBetweenNotes = noteDuration * 1.30; // Pause between notes
+      delay(pauseBetweenNotes); // Wait before playing the next note
+      noTone(BUZZER_PIN); // Stop the tone
+    }
+
   } else {
     noTone(BUZZER_PIN); // Matikan buzzer
   }
 }
+
