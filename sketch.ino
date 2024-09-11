@@ -3,53 +3,21 @@
 #include <LiquidCrystal_I2C.h>
 
 #define BUZZER_PIN 8 // Tentukan pin buzzer, sesuaikan jika diperlukan
-#define NOTE_C4 262
-#define NOTE_D4 294
-#define NOTE_E4 330
-#define NOTE_F4 349
-#define NOTE_G4 392
-#define NOTE_A4 440
-#define NOTE_B4 493
-#define NOTE_C5 523
-#define NOTE_D5 587
-#define NOTE_E5 659
-#define NOTE_F5 698
-#define NOTE_G5 784
-#define NOTE_A5 880
-#define NOTE_B5 987
-
-// Melody and duration arrays
 int melody[] = {
-  NOTE_G4, NOTE_C5, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, 
-  NOTE_A4, NOTE_G4, NOTE_F4, NOTE_G4, NOTE_C4, NOTE_C4, 
-  NOTE_D4, NOTE_D4, NOTE_E4, NOTE_F4, NOTE_F4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_D5, 
-  NOTE_E5, NOTE_D5, NOTE_C5, NOTE_D5, NOTE_B4, NOTE_G4, 
-  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, 
-  NOTE_A4, NOTE_G4, NOTE_F4, NOTE_G4, NOTE_C4, NOTE_C4, 
-  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_B4, NOTE_C5, NOTE_D5, 
-  NOTE_E5, NOTE_D5, NOTE_C5, NOTE_B4, NOTE_C5, NOTE_D5, NOTE_G4, NOTE_G4, NOTE_B4, NOTE_C5, NOTE_D5,
-  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_E4, NOTE_E4, NOTE_G4, NOTE_A4, NOTE_B4,
-  NOTE_C5, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_C5, NOTE_F5,
-  NOTE_F5, NOTE_E5, NOTE_D5, NOTE_C5, NOTE_D5, NOTE_E5, NOTE_C5, NOTE_C5,
-  NOTE_D5, NOTE_C5, NOTE_B4, NOTE_A4, NOTE_B4, NOTE_C5, NOTE_A4, NOTE_A4,
-  NOTE_C5, NOTE_B4, NOTE_A4, NOTE_G4, NOTE_C4, NOTE_G4, NOTE_A4, NOTE_B4, NOTE_C5
+  392, 392, 392, 523, 659, 659, 659, 523, 392, 349, 392, 440,
+  392, 392, 392, 523, 659, 659, 659, 523, 392, 349, 392, 440,
+  523, 523, 523, 523, 659, 659, 659, 523, 392, 349, 392, 440,
+  523, 523, 523, 523, 659, 659, 659, 523, 392, 349, 392, 440
 };
 
+// Note durations (in milliseconds)
 int noteDurations[] = {
-  8, 4, 6, 16, 4, 8, 8, 
-  4, 6, 16, 4, 8, 8, 
-  4, 8, 8, 4, 8, 8, 4, 8, 8, 2,
-  4, 6, 16, 4, 8, 8, 
-  4, 6, 16, 4, 8, 8, 
-  4, 6, 16, 4, 6, 16, 
-  4, 6, 16, 8, 8, 8, 8, 
-  2, 8, 8, 8, 8, 3, 8, 8, 8, 8, 8,
-  2, 8, 8, 8, 8, 3, 8, 8, 8, 8, 8,
-  4, 6, 16, 4, 6, 16, 4, 8, 8, 2,
-  2, 8, 8, 8, 8, 3, 8, 2,
-  2, 8, 8, 8, 8, 3, 8, 2,
-  4, 6, 16, 4, 4, 2, 4, 4, 1
+  500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+  500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+  500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500,
+  500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500, 500
 };
+
 
 // Inisialisasi RTC
 RTC_DS3231 rtc;
@@ -190,7 +158,7 @@ void displayPrayerTime(int hour, int minute, int dayOfWeek) {
   } else if ((hour == ishaHour && minute == ishaMinute) || (hour >= ishaHour || hour <= fajrHour)) {
     text = "Waktunya Salat Isya";
   } else {
-    text = "Tidak Ada Waktu Salat";
+    text = "Waktu Belajar dan Bekerja";
   }
 
   // Tampilkan teks berjalan
@@ -235,4 +203,3 @@ void checkPrayerTimes(int hour, int minute, int dayOfWeek) {
     noTone(BUZZER_PIN); // Matikan buzzer
   }
 }
-
